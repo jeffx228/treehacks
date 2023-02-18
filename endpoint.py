@@ -43,9 +43,17 @@ dict_list = {}
 for coin in coins:
     dict_list[coin] = []
 
+start_time = time.time()
 
 while True: 
     for url in urls:
         coin = coins[urls.index(url)]
         price = hitAPI(url, coin)
+        dict_list[coin].append(price)
+        time_elapsed = time.time() - start_time
+        min_price = min(dict_list[coin])
+        max_price = max(dict_list[coin])
+        print(f"Price interval: [${min_price} , ${max_price}] for {coin}, lookback: {time_elapsed} seconds.")
+    print("Waiting for 30 seconds")
+    time.sleep(30)
 
