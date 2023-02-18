@@ -1,5 +1,13 @@
 import requests
 import time
+import os
+import slack
+from pathlib import Path
+from dotenv import load_dotenv
+
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
+client = slack.WebClient(token=os.environ['SLACK_TOKEN'])
 
 # Makes API call for given URL
 def hitAPI(url, coin):
@@ -50,10 +58,17 @@ while True:
         coin = coins[urls.index(url)]
         price = hitAPI(url, coin)
         dict_list[coin].append(price)
+        if len(dict_list[coin]) >= 2 and dict_list[coin][-1] > 1.01 * dict_list[coin][-2]:
+            client.chat_postMessage(channel='#a', text=f"ALERT: Greater than 1% upmove detected for {coin}")
+
+        if len(dict_list[coin]) >= 2 and dict_list[coin][-1] < 0.99 * dict_list[coin][-2]:
+            client.chat_postMessage(channel='#a', text=f"ALERT: Greater than 1% downmove detected for {coin}")
         time_elapsed = time.time() - start_time
         min_price = min(dict_list[coin])
         max_price = max(dict_list[coin])
         print(f"Price interval: [${min_price} , ${max_price}] for {coin}, lookback: {time_elapsed} seconds.")
-    print("Waiting for 30 seconds")
+        client.chat_postMessage(channel='#a', text=f"Price interval: [${min_price} , ${max_price}] for {coin}, lookback: {time_elapsed} seconds.")
+    print("Waiting to alert for large movies")
+    client.chat_postMessage(channel='#a', text="Waiting to alert for large moves")
     time.sleep(30)
 
